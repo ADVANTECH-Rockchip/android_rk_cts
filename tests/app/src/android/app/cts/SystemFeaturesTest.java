@@ -42,6 +42,8 @@ import android.nfc.NfcAdapter;
 import android.telephony.TelephonyManager;
 import android.test.InstrumentationTestCase;
 
+import com.android.compatibility.common.util.CddTest;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -231,6 +233,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
         }
     }
 
+    @CddTest(requirement="3.8.7/C-1-1")
     public void testLiveWallpaperFeature() {
         try {
             Intent intent = new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
@@ -266,6 +269,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
         }
     }
 
+    @CddTest(requirement="7.4.4/C-1-1,C-2-1")
     public void testNfcFeatures() {
         if (NfcAdapter.getDefaultAdapter(mContext) != null) {
             // Watches MAY support all FEATURE_NFC features when an NfcAdapter is available, but
@@ -283,6 +287,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
         }
     }
 
+    @CddTest(requirement="7.1.3/C-0-1")
     public void testScreenFeatures() {
         assertTrue(mPackageManager.hasSystemFeature(PackageManager.FEATURE_SCREEN_LANDSCAPE)
                 || mPackageManager.hasSystemFeature(PackageManager.FEATURE_SCREEN_PORTRAIT));
@@ -438,6 +443,8 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
     /**
      * Check that the {@link TelephonyManager#getPhoneType()} matches the reported features.
      */
+
+    @CddTest(requirement="7.4.1/C-1-1")
     public void testTelephonyFeatures() {
         if (!mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
             return;
@@ -462,6 +469,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
         }
     }
 
+    @CddTest(requirement="7.2.4/C-1-2,C-3-1")
     public void testTouchScreenFeatures() {
         ConfigurationInfo configInfo = mActivityManager.getDeviceConfigurationInfo();
         if (configInfo.reqTouchScreen != Configuration.TOUCHSCREEN_NOTOUCH) {
@@ -474,6 +482,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
         // TODO: Add tests for the other touchscreen features.
     }
 
+    @CddTest(requirement="7.7.2/C-2-1")
     public void testUsbAccessory() {
         // USB accessory mode is only a requirement for devices with USB ports supporting
         // peripheral mode. As there is no public API to distinguish a device with only host

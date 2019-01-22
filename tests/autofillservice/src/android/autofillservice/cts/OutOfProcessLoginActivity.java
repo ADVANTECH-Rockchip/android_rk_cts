@@ -30,35 +30,63 @@ import java.io.IOException;
  * Simple activity showing R.layout.login_activity. Started outside of the test process.
  */
 public class OutOfProcessLoginActivity extends Activity {
-    private static final String LOG_TAG = OutOfProcessLoginActivity.class.getSimpleName();
+    private static final String TAG = "OutOfProcessLoginActivity";
+
+    private static OutOfProcessLoginActivity sInstance;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.i(LOG_TAG, "onCreate(" + savedInstanceState + ")");
+        Log.i(TAG, "onCreate(" + savedInstanceState + ")");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.login_activity);
 
-        findViewById(R.id.login).setOnClickListener((v) -> {
-            finish();
-        });
+        findViewById(R.id.login).setOnClickListener((v) -> finish());
+
+        sInstance = this;
+    }
+
+    @Override
+    protected void onStart() {
+        Log.i(TAG, "onStart()");
+        super.onStart();
+        try {
+            if (!getStartedMarker(this).createNewFile()) {
+                Log.e(TAG, "cannot write started file");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "cannot write started file: " + e);
+        }
     }
 
     @Override
     protected void onStop() {
-        Log.i(LOG_TAG, "onStop()");
+        Log.i(TAG, "onStop()");
         super.onStop();
 
         try {
-            getStoppedMarker(this).createNewFile();
+            if (!getStoppedMarker(this).createNewFile()) {
+                Log.e(TAG, "could not write stopped marker");
+            } else {
+                Log.v(TAG, "wrote stopped marker");
+            }
         } catch (IOException e) {
-            Log.e(LOG_TAG, "cannot write stopped filed");
+            Log.e(TAG, "could write stopped marker: " + e);
         }
     }
 
     @Override
     protected void onDestroy() {
-        Log.i(LOG_TAG, "onDestroy()");
+        Log.i(TAG, "onDestroy()");
+        try {
+            if (!getDestroyedMarker(this).createNewFile()) {
+                Log.e(TAG, "could not write destroyed marker");
+            } else {
+                Log.v(TAG, "wrote destroyed marker");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "could write destroyed marker: " + e);
+        }
         super.onDestroy();
     }
 
@@ -70,5 +98,32 @@ public class OutOfProcessLoginActivity extends Activity {
      */
     @NonNull public static File getStoppedMarker(@NonNull Context context) {
         return new File(context.getFilesDir(), "stopped");
+    }
+
+    /**
+     * Get the file that signals that the activity has entered {@link Activity#onStart()}.
+     *
+     * @param context Context of the app
+     * @return The marker file that is written onStart()
+     */
+    @NonNull public static File getStartedMarker(@NonNull Context context) {
+        return new File(context.getFilesDir(), "started");
+    }
+
+   /**
+     * Get the file that signals that the activity has entered {@link Activity#onDestroy()}.
+     *
+     * @param context Context of the app
+     * @return The marker file that is written onDestroy()
+     */
+    @NonNull public static File getDestroyedMarker(@NonNull Context context) {
+        return new File(context.getFilesDir(), "destroyed");
+    }
+
+    public static void finishIt() {
+        Log.v(TAG, "Finishing " + sInstance);
+        if (sInstance != null) {
+            sInstance.finish();
+        }
     }
 }

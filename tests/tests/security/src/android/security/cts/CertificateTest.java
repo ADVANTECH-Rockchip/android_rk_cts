@@ -16,6 +16,8 @@
 
 package android.security.cts;
 
+import com.android.compatibility.common.util.CddTest;
+
 import java.io.IOException;
 import android.platform.test.annotations.SecurityTest;
 import java.security.KeyStore;
@@ -36,6 +38,7 @@ import junit.framework.TestCase;
 @SecurityTest
 public class CertificateTest extends TestCase {
 
+    @CddTest(requirement="9.8.4/C-0-1")
     public void testNoRemovedCertificates() throws Exception {
         Set<String> expectedCertificates = new HashSet<String>(
                 Arrays.asList(CertificateData.CERTIFICATE_DATA));
@@ -62,6 +65,7 @@ public class CertificateTest extends TestCase {
      *
      * <p>For questions, comments, and code reviews please contact security@android.com.
      */
+    @CddTest(requirement="9.8.4/C-0-1,C-0-2")
     public void testNoAddedCertificates() throws Exception {
         Set<String> expectedCertificates = new HashSet<String>(
                 Arrays.asList(CertificateData.CERTIFICATE_DATA));
@@ -70,6 +74,7 @@ public class CertificateTest extends TestCase {
         assertEquals("Unknown CA certificates", Collections.EMPTY_SET, deviceCertificates);
     }
 
+    @CddTest(requirement="9.8.4/C-0-1")
     public void testBlockCertificates() throws Exception {
         Set<String> blockCertificates = new HashSet<String>();
         blockCertificates.add("C0:60:ED:44:CB:D8:81:BD:0E:F8:6C:0B:A2:87:DD:CF:81:67:47:8C");

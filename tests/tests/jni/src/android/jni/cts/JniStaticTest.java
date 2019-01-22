@@ -16,6 +16,8 @@
 
 package android.jni.cts;
 
+import com.android.compatibility.common.util.CddTest;
+
 import java.io.IOException;
 
 /**
@@ -23,6 +25,7 @@ import java.io.IOException;
  * class is a class defined in this package that declares the bulk of
  * its methods as native.
  */
+@CddTest(requirement="3.3.1/C-0-2")
 public class JniStaticTest extends JniTestCase {
 
     static {
@@ -35,6 +38,7 @@ public class JniStaticTest extends JniTestCase {
      * Test library accessibility. Internal platform libraries should not
      * be accessible from the jni code.
      */
+    @CddTest(requirement="3.3.1/C-0-7,C-0-9,C-0-10")
     public void test_linker_namespaces() throws IOException {
         String error = LinkerNamespacesHelper.runAccessibilityTest();
         if (error != null) {
