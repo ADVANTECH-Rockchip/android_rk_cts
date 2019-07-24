@@ -11,6 +11,8 @@ import com.android.cts.verifier.R;
 import com.android.cts.verifier.sensors.base.SensorCtsVerifierTestActivity;
 import com.android.cts.verifier.sensors.helpers.SensorTestScreenManipulator;
 
+import com.android.compatibility.common.util.CddTest;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -122,6 +124,7 @@ public class DeviceSuspendTestActivity
             }
         };
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenReportLatencyExpiresAccel() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true);
             if (wakeUpSensor == null) {
@@ -130,6 +133,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenReportLatencyExpires(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenReportLatencyExpiresGyro() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE, true);
             if (wakeUpSensor == null) {
@@ -138,6 +142,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenReportLatencyExpires(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenReportLatencyExpiresMag() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD,true);
             if (wakeUpSensor == null) {
@@ -146,6 +151,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenReportLatencyExpires(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenFIFOFullAccel() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true);
             if (wakeUpSensor == null) {
@@ -154,6 +160,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenFIFOFull(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenFIFOFullGyro() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE, true);
             if (wakeUpSensor == null) {
@@ -162,6 +169,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenFIFOFull(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAPWakeUpWhenFIFOFullMag() throws Throwable {
             Sensor wakeUpSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD,true);
             if (wakeUpSensor == null) {
@@ -170,6 +178,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpWhenFIFOFull(wakeUpSensor);
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAccelBatchingInAPSuspendLargeReportLatency() throws Throwable {
             Sensor accel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             if (accel == null) {
@@ -178,6 +187,7 @@ public class DeviceSuspendTestActivity
             return runAPWakeUpByAlarmNonWakeSensor(accel, (int)TimeUnit.SECONDS.toMicros(1000));
         }
 
+        @CddTest(requirement="7.3/C-1-8")
         public String testAccelBatchingInAPSuspendZeroReportLatency() throws Throwable {
             Sensor accel = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
            if (accel == null) {
@@ -187,18 +197,9 @@ public class DeviceSuspendTestActivity
         }
 
         /**
-         * Verify that each continuous sensor is using the correct
-         * clock source (CLOCK_BOOTTIME) for timestamps.
+         * Verify that the device is able to suspend
          */
-        public String testTimestampClockSource() throws Throwable {
-            String string = null;
-            boolean error_occurred = false;
-            List<Sensor> sensorList = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-            if (sensorList == null) {
-                throw new SensorTestStateNotSupportedException(
-                    "Sensors are not available in the system.");
-            }
-
+        public void verifyDeviceCanSuspend() throws Throwable {
             // Make sure clocks are different (i.e. kernel has suspended at least once)
             // so that we can determine if sensors are using correct clocksource timestamp
             final int MAX_SLEEP_ATTEMPTS = 10;
@@ -238,6 +239,22 @@ public class DeviceSuspendTestActivity
                 mDeviceSuspendLock.acquire();
             }
             mAlarmManager.cancel(mPendingIntent);
+        }
+
+        /**
+         * Verify that each continuous sensor is using the correct
+         * clock source (CLOCK_BOOTTIME) for timestamps.
+         */
+        public String testTimestampClockSource() throws Throwable {
+            String string = null;
+            boolean error_occurred = false;
+            List<Sensor> sensorList = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+            if (sensorList == null) {
+                throw new SensorTestStateNotSupportedException(
+                    "Sensors are not available in the system.");
+            }
+
+            boolean needToVerifySuspend = true;
 
             for (Sensor sensor : sensorList) {
                 if (sensor.getReportingMode() != Sensor.REPORTING_MODE_CONTINUOUS) {
@@ -248,6 +265,12 @@ public class DeviceSuspendTestActivity
                     Log.i(TAG, "testTimestampClockSource skipping vendor specific sensor: '" + sensor.getName());
                     continue;
                 }
+
+                if (needToVerifySuspend) {
+                    verifyDeviceCanSuspend();
+                    needToVerifySuspend = false;
+                }
+
                 try {
                     string = runVerifySensorTimestampClockbase(sensor, false);
                     if (string != null) {

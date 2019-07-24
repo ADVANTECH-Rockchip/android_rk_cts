@@ -152,6 +152,7 @@ public class WebViewClientTest extends ActivityInstrumentationTestCase2<WebViewC
                 return true;
             }
         });
+        final int childCallCount = childWebViewClient.getShouldOverrideUrlLoadingCallCount();
         mOnUiThread.loadUrl(mWebServer.getAssetUrl(TestHtmlConstants.BLANK_TAG_URL));
 
         new PollingCheck(TEST_TIMEOUT) {
@@ -159,6 +160,12 @@ public class WebViewClientTest extends ActivityInstrumentationTestCase2<WebViewC
             protected boolean check() {
                 return childWebViewClient.hasOnPageFinishedCalled();
             }
+        }.run();
+        new PollingCheck(TEST_TIMEOUT) {
+          @Override
+          protected boolean check() {
+            return childWebViewClient.getShouldOverrideUrlLoadingCallCount() > childCallCount;
+          }
         }.run();
         assertEquals(mWebServer.getAssetUrl(TestHtmlConstants.PAGE_WITH_LINK_URL),
                 childWebViewClient.getLastShouldOverrideUrl());
@@ -781,7 +788,6 @@ public class WebViewClientTest extends ActivityInstrumentationTestCase2<WebViewC
         @Override
         public void onLoadResource(WebView view, String url) {
             super.onLoadResource(view, url);
-            assertTrue(mOnPageStartedCalled);
             mOnLoadResourceCalled = true;
         }
 
